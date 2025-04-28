@@ -16,7 +16,7 @@ BluetoothSerial SerialBT;
 #define PWM_In4_pin 15    // PWM
 #define Drv_In4_chn 1
 
-int motor_speed = 255; 
+int motor_speed = 200; 
 #define SENSOR_1 27
 #define SENSOR_2 26
 #define SENSOR_3 25
@@ -25,7 +25,7 @@ int motor_speed = 255;
 
 #define On_calb_led_pin 19
 
-#define spd 120 
+#define spd 110
 
 #define SERVO_FREQ 50  // tĂ¡ÂºÂ§n sĂ¡Â»â€˜
 #define SERVO_RES 11   // Ă„â€˜Ă¡Â»â„¢ phĂƒÂ¢n giĂ¡ÂºÂ£i
@@ -36,6 +36,8 @@ int motor_speed = 255;
 #define SERVO_2_pin 13  // UP/down
 #define SERVO_3_chn 9
 #define SERVO_3_pin 12  // UP/down
+
+int mode = 0;
 
 void tien() {
   digitalWrite(Drv_In1_pin, HIGH);
@@ -70,6 +72,12 @@ void tien_1() {
   digitalWrite(Drv_In1_pin, 1);
   ledcWrite(Drv_In1_chn, spd-25);
   digitalWrite(Drv_In4_pin, 1);
+  ledcWrite(Drv_In4_chn, spd-25);
+}
+void lui_1() {
+  digitalWrite(Drv_In1_pin, 0);
+  ledcWrite(Drv_In1_chn, spd-25);
+  digitalWrite(Drv_In4_pin, 0);
   ledcWrite(Drv_In4_chn, spd-25);
 }
 void rephai_1() {
@@ -115,7 +123,7 @@ void tien_999() {
   ledcWrite(Drv_In4_chn, spd-50);
 }
 
-const int threshold = 100; //1150
+const int threshold = 1150; //1150
 int sensor_1, sensor_2, sensor_3, sensor_4, sensor_5;
 int vitri;
 
@@ -146,60 +154,78 @@ void do_line() {
         //     lui();
         //     Serial.println("LUI");
         //     break;
-       case 10000: case 11000: case 11100: case 11110: 
-            rephai_1();
-            // retrai_1();
+       case 10000: case 11000:  case 11110: 
+            // rephai_1();
+            retrai_1();
             Serial.println("rephai_1");
             // tien_999();
             break;
-        case 1: case 11:  case 111: case 1111: case 1100:
-            retrai_1();
-            // rephai_1();
+        case 1: case 11:  case 111: case 1111: 
+            // retrai_1();
+            rephai_1();
             Serial.println("retrai_1");
             // tien_999();
             break;
         case 100: case 1110: case 11111: case 11011:
-            tien_1();
+            lui_1();
             Serial.println("tien");
             break;
-        case 110: case 10:
-            // rephai1();
-            retrai1();
+        case 110: case 10: 
+            rephai1();
+            // retrai1();
             Serial.println("retrai1 1");
             break;
         case 1000: 
             Serial.println("rephai1 1");
-            // retrai1();
-            rephai1();
+            retrai1();
+            // rephai1();
             break;
     }
 }
 
+// //DsR
 void chan21(){
-  ledcWrite(SERVO_2_chn,180);
+  ledcWrite(SERVO_2_chn,100);
 }
 void chan22(){
-  ledcWrite(SERVO_2_chn,150);
+  ledcWrite(SERVO_2_chn,130);
 }
 void nang(){
-  ledcWrite(SERVO_3_chn,200);
+  ledcWrite(SERVO_3_chn,250);
 }
 void nang2(){
-  ledcWrite(SERVO_3_chn,260);
-}
-void nang3(){
-  ledcWrite(SERVO_3_chn,140);
+  ledcWrite(SERVO_3_chn,120);
 }
 void gap() {
-  ledcWrite(SERVO_1_chn,97);
+  ledcWrite(SERVO_1_chn,240);
 }
 void nha(){
-  ledcWrite(SERVO_1_chn,40);
+  ledcWrite(SERVO_1_chn,190);
 }
+
+// ba gia 2
+// void chan21(){
+//   ledcWrite(SERVO_2_chn,100);
+// }
+// void chan22(){
+//   ledcWrite(SERVO_2_chn,150);
+// }
+// void nang(){
+//   ledcWrite(SERVO_3_chn,220);
+// }  
+// void nang2(){
+//   ledcWrite(SERVO_3_chn,110);
+// }
+// void gap() {
+//   ledcWrite(SERVO_1_chn,150);
+// }
+// void nha(){
+//   ledcWrite(SERVO_1_chn,90);
+// }
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("chim"); 
+  SerialBT.begin("DsR"); 
   // MOTOR
   pinMode(Drv_In1_pin,OUTPUT);
   ledcSetup(Drv_In1_chn, PWM_FREQ, PWM_RES);
@@ -220,12 +246,7 @@ void setup() {
 void dieukhien() {
   if (SerialBT.available()) {
     int blue = SerialBT.read();
-    
-    if(blue != 50 && blue != 53){
-      Serial.println(blue);
-    }
-    
-    switch (blue) {
+      switch (blue) {
       case 0:
         dung();
         break;
@@ -233,13 +254,15 @@ void dieukhien() {
         tien();
         break;
       case 2:
-        rephai();
+       retrai();
+        // rephai();
         break;
       case 3:
         lui();
         break;
       case 4:
-        retrai();
+      rephai();
+        // retrai();
         break;
       case 11:
         gap();
@@ -259,9 +282,6 @@ void dieukhien() {
       case 16:
         nang2();
         break;
-      case 9:
-        nang3();
-        break;
       case 10:
         chan21();
         break;
@@ -271,13 +291,38 @@ void dieukhien() {
       case 18:
         nang();
         break;
+  //     case 20:
+  //     mode=0;
+  //     break;
+  //   case 21:
+  //     mode =1;
+  //     break;
     }
+  //    if (blue ==20 ) {
+  //     mode = 0; // Chuyển sang điều khiển
+  //   } else if (blue == 21) {
+  //     mode = 1; // Chuyển sang dò line
+  //   } 
+
+  //   if (mode == 1) {
+  //     do_line();
+  //   } else {
+  //     dieukhien();
+  // }
   }
 }
 void loop() {
   if (SerialBT.connected()) {
     dieukhien();}
   else{
-     do_line();
+    do_line();
   }
+  // for(int i=0 ; i<360; i+=10){
+  //   ledcWrite(SERVO_1_chn,i);
+  //   Serial.println(i);
+  //   delay(1000);
+ // }
+  // dieukhien();
+  // ledcWrite(SERVO_1_chn,100);
+  // delay(1000);
 }
